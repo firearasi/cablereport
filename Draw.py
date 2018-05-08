@@ -6,6 +6,10 @@ import dateutil.parser as dateparser
 import argparse
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.ticker as plticker
+
+loc = plticker.MultipleLocator(base=1.0) # this locator puts ticks at regular intervals
+ax.xaxis.set_major_locator(loc)
 
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
@@ -88,7 +92,7 @@ font = FontProperties(fname=r"simsun.ttc", size=12)
 
 for i in range(num_terminal):
     plt.figure(1, figsize=(16, 4))
-    plt.suptitle(u'端口' + str(i + 1) + '衰减变化量', fontproperties=font)
+    plt.suptitle(u'端口' + str(i + 1) + '插入损耗变化量', fontproperties=font)
     
     ax = plt.subplot(131)
     ax.plot(x, delta[i::num_terminal, 0])
@@ -97,20 +101,29 @@ for i in range(num_terminal):
     ax.set_xlabel(r'时间 (h)', fontproperties=font)
     ax.set_ylabel(r'变化量 (dB)', fontproperties=font)
     
+    #设置y轴数字间隔
+    loc = plticker.MultipleLocator(base=0.1) # this locator puts ticks at regular intervals
+    ax.yaxis.set_major_locator(loc)
+    
     ax = plt.subplot(132)
     ax.plot(x, delta[i::num_terminal, 1])  
     ax.set_title('1490nm')
     ax.set_ylim(-0.5, 0.5)
     ax.set_xlabel(r'时间 (h)', fontproperties=font)
     #ax.set_ylabel(r'变化量 (dB)', fontproperties=font)
-   
+    loc = plticker.MultipleLocator(base=0.1) # this locator puts ticks at regular intervals
+    ax.yaxis.set_major_locator(loc)
+    
+    
     ax = plt.subplot(133)
     ax.plot(x, delta[i::num_terminal, 2])
     ax.set_ylim(-0.5, 0.5)
     ax.set_title('1550nm')
     ax.set_xlabel(r'时间 (h)', fontproperties=font)
     #ax.set_ylabel(r'变化量 (dB)', fontproperties=font)
-   
+    loc = plticker.MultipleLocator(base=0.1) # this locator puts ticks at regular intervals
+    ax.yaxis.set_major_locator(loc)
+    
    
     plt.tight_layout(pad=3, w_pad=2, h_pad=4)
     plt.savefig(str(i) + '.jpg')
@@ -124,37 +137,57 @@ end_time_string = format_datetime(datetimes[-1], locale='zh_CN')
 report = Document()
 
 
-title = report.add_paragraph('试验名称：XXX试验插入损耗变化量在线监测')
+title = report.add_paragraph()
 title.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
 
 run = title.add_run()
-run.font.name = "楷体_GB2312"
+run.font.name = '宋体'
+run.font.size = Pt(12)
 r = run._element
-r.rPr.rFonts.set(qn('w:eastAsia'), '楷体_GB2312')
+r.rPr.rFonts.set(qn('w:eastAsia'), '宋体')
+run.add_text('试验名称：XXX试验插入损耗变化量在线监测')
 
 
 
 
 table = report.add_table(rows=4,  cols=6)
-table.cell(0, 0).text = '产品名称'
-table.cell(0, 1).text = 'product'
-table.cell(0, 2).text = '样品编号'
-table.cell(0, 3).text = 'samplenumber'
-table.cell(0, 4).text = '型号规格'
-table.cell(0, 5).text = 'type'
 
-table.cell(1, 0).text = '受检单位'
-table.cell(1, 1).text = 'institution'
-table.cell(1, 2).text = '设备名称'
-table.cell(1, 3).text = '多通道免缠绕插回损测试仪（单模）MS08B'
-table.cell(1, 4).text = '出厂编号'
-table.cell(1, 5).text = '1538556'
-table.cell(2, 0).text = '检验时间'
-table.cell(3, 0).text = '检验人员'
+#设定单元格字体和内容
+def set_cell_text(cell, text):
+    p = cell.add_paragraph()
+    run = p.add_run()
+    run.font.name = '宋体'
+    run.font.size = Pt(10.5)
+    r = run._element
+    r.rPr.rFonts.set(qn('w:eastAsia'), '宋体')
+    run.add_text(text)
+
+table.style = 'TableGrid' #single lines in all cells
+table.autofit = True
+
+
+set_cell_text(table.cell(0, 0), '产品名称')
+set_cell_text(table.cell(0, 1), 'product')  
+set_cell_text(table.cell(0, 2), '样品编号')
+set_cell_text(table.cell(0, 3), 'samplenumber')
+set_cell_text(table.cell(0, 4), '型号规格')
+set_cell_text(table.cell(0, 5), 'type')
+
+set_cell_text(table.cell(1, 0), '受检单位')
+set_cell_text(table.cell(1, 1), 'institution')
+set_cell_text(table.cell(1, 2), '设备名称')
+set_cell_text(table.cell(1, 3), '多通道免缠绕插回损测试仪（单模）MS08B')
+set_cell_text(table.cell(1, 4), '出厂编号')
+set_cell_text(table.cell(1, 5), '1538556')
+set_cell_text(table.cell(2, 0), '检验时间')
+set_cell_text(table.cell(3, 0), '检验人员')
+
+#合并一些表格单元
 time_cell = table.cell(2, 1).merge(table.cell(2,2)).merge(table.cell(2,3)).merge(table.cell(2,4)).merge(table.cell(2,5))
 table.cell(3, 1).merge(table.cell(3,2)).merge(table.cell(3,3)).merge(table.cell(3,4)).merge(table.cell(3,5))
-time_cell.text = start_time_string + ' 至 ' + end_time_string
+set_cell_text(time_cell, start_time_string + ' 至 ' + end_time_string)
+
 
 report.add_paragraph(' ')
 
