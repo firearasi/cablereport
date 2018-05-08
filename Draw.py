@@ -87,7 +87,7 @@ length=int(len(delta)/4)
 x = [(item-datetimes[0]).total_seconds()/3600.0 for item in datetimes ]
 
 from matplotlib.font_manager import FontProperties
-font = FontProperties(fname=r"simsun.ttc", size=12)
+font = FontProperties(fname=r"simsun.ttc", size=16)
 
 
 for i in range(num_terminal):
@@ -125,10 +125,10 @@ for i in range(num_terminal):
     ax.yaxis.set_major_locator(loc)
     
    
-    plt.tight_layout(pad=3, w_pad=2, h_pad=4)
+    plt.tight_layout(pad=3, w_pad=4, h_pad=4)
     plt.savefig(str(i) + '.jpg')
     
-    plt.show()
+    #plt.show()
     
 #生成报告
 start_time_string = format_datetime(datetimes[0], locale='zh_CN')
@@ -155,7 +155,7 @@ table = report.add_table(rows=4,  cols=6)
 
 #设定单元格字体和内容
 def set_cell_text(cell, text):
-    p = cell.add_paragraph()
+    p = cell.paragraphs[0]
     run = p.add_run()
     run.font.name = '宋体'
     run.font.size = Pt(10.5)
@@ -185,14 +185,17 @@ set_cell_text(table.cell(3, 0), '检验人员')
 
 #合并一些表格单元
 time_cell = table.cell(2, 1).merge(table.cell(2,2)).merge(table.cell(2,3)).merge(table.cell(2,4)).merge(table.cell(2,5))
-table.cell(3, 1).merge(table.cell(3,2)).merge(table.cell(3,3)).merge(table.cell(3,4)).merge(table.cell(3,5))
 set_cell_text(time_cell, start_time_string + ' 至 ' + end_time_string)
+
+person_cell = table.cell(3, 1).merge(table.cell(3,2)).merge(table.cell(3,3)).merge(table.cell(3,4)).merge(table.cell(3,5))
+p = person_cell.paragraphs[0]
+p.alignment=WD_ALIGN_PARAGRAPH.JUSTIFY_LOW
 
 
 report.add_paragraph(' ')
 
 for i in range(num_terminal):
-    report.add_picture(str(i) + '.jpg', width=Inches(6), height=Inches(1.5))
+    report.add_picture(str(i) + '.jpg', width=Inches(1.5 * 4), height=Inches(1.5))
 
 report.save('报告.docx')
 ##generate_report(args.path, args.product, args.samplenumber, args.institution)
