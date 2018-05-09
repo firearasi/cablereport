@@ -1,0 +1,10 @@
+Part number: 4-1                                               
+Serial number: gdjh_test - 0006
+Date: 2018/4/19 16:51:58
+1310 nm	1490 nm	1550 nm
+Fiber
+IL End A Refl. End A IL End A Refl. End A IL End A Refl. End A
+1	6.64	 	6.58	 	6.59	 
+2	6.93	 	6.80	 	6.78	 
+3	7.17	 	7.07	 	7.05	 
+4	6.78	 	6.61	 	6.61	 
