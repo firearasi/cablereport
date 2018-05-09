@@ -1,0 +1,5 @@
+ 示例命令行
+python Draw.py gdjh_test
+
+ 
+python Draw.py gdjh_test  --product 光分路器 --samplenumber 123 --institution 康宁 --type A

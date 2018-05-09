@@ -62,18 +62,14 @@ for file in os.listdir(args.path):
         files.append(os.path.join(args.path, file))
 files.sort()
 
-# 处理初始文件，获取一些信息
+
 fname0 = files[0]
 print(fname0)
 with open(fname0, 'r') as file0:
     lines0 = file0.readlines()
     lines0=[s.strip() for s in lines0]
     time_stamp = lines0[4][6:]
-    terminal_lines = range(12, len(lines0),2)
-    num_terminal= len(terminal_lines)
-    
-    # 在初始文件中寻找端口号码
-    terminal_names = [lines0[i].split()[0] for i in terminal_lines]
+    num_terminal= len(range(12, len(lines0),2))
 
 base_data=read_data_from_file(fname0)[1]
 data=np.zeros(shape=(0, 3))
@@ -100,7 +96,7 @@ font = FontProperties(fname=r"simsun.ttc", size=16)
 
 for i in range(num_terminal):
     plt.figure(1, figsize=(16, 4))
-    plt.suptitle(u'端口' + terminal_names[i] + '插入损耗变化量', fontproperties=font)
+    plt.suptitle(u'端口' + str(i + 1) + '插入损耗变化量', fontproperties=font)
     
     ax = plt.subplot(131)
     ax.plot(x, delta[i::num_terminal, 0])
@@ -140,76 +136,73 @@ for i in range(num_terminal):
     
 #生成报告
     
-rounds = num_terminal // 2
+# 从文件中读取的开始试验时间和结束试验时间
+start_time_string = format_datetime(datetimes[0], locale='zh_CN')
+end_time_string = format_datetime(datetimes[-1], locale='zh_CN')
 
-for j in range(rounds):
-    # 从文件中读取的开始试验时间和结束试验时间
-    start_time_string = format_datetime(datetimes[0], locale='zh_CN')
-    end_time_string = format_datetime(datetimes[-1], locale='zh_CN')
-    
-    
-    report = Document()
-    
-    title = report.add_paragraph()
-    title.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    
-    # 设定标题字体和内容
-    run = title.add_run()
+
+report = Document()
+
+title = report.add_paragraph()
+title.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+# 设定标题字体和内容
+run = title.add_run()
+run.font.name = '宋体'
+run.font.size = Pt(12)
+r = run._element
+r.rPr.rFonts.set(qn('w:eastAsia'), '宋体')
+run.add_text('试验名称：XXX试验插入损耗变化量在线监测')
+
+
+
+# 生成表格
+table = report.add_table(rows=4,  cols=6)
+
+#设定单元格字体和内容
+def set_cell_text(cell, text):
+    p = cell.paragraphs[0]
+    run = p.add_run()
     run.font.name = '宋体'
-    run.font.size = Pt(12)
+    run.font.size = Pt(10.5)
     r = run._element
     r.rPr.rFonts.set(qn('w:eastAsia'), '宋体')
-    run.add_text('试验名称：XXX试验插入损耗变化量在线监测')
-    
-    
-    
-    # 生成表格
-    table = report.add_table(rows=4,  cols=6)
-    
-    #设定单元格字体和内容
-    def set_cell_text(cell, text):
-        p = cell.paragraphs[0]
-        run = p.add_run()
-        run.font.name = '宋体'
-        run.font.size = Pt(10.5)
-        r = run._element
-        r.rPr.rFonts.set(qn('w:eastAsia'), '宋体')
-        run.add_text(text)
-    
-    table.style = 'TableGrid' #single lines in all cells
-    table.autofit = True
-    
-    
-    set_cell_text(table.cell(0, 0), '产品名称')
-    set_cell_text(table.cell(0, 1), args.product)  
-    set_cell_text(table.cell(0, 2), '样品编号')
-    set_cell_text(table.cell(0, 3), args.samplenumber)
-    set_cell_text(table.cell(0, 4), '型号规格')
-    set_cell_text(table.cell(0, 5), args.type)
-    
-    set_cell_text(table.cell(1, 0), '受检单位')
-    set_cell_text(table.cell(1, 1), args.institution)
-    set_cell_text(table.cell(1, 2), '设备名称')
-    set_cell_text(table.cell(1, 3), '多通道免缠绕插回损测试仪（单模）MS08B')
-    set_cell_text(table.cell(1, 4), '出厂编号')
-    set_cell_text(table.cell(1, 5), '1538556')
-    set_cell_text(table.cell(2, 0), '检验时间')
-    set_cell_text(table.cell(3, 0), '检验人员')
-    
-    #合并一些表格单元
-    time_cell = table.cell(2, 1).merge(table.cell(2,5))
-    set_cell_text(time_cell, start_time_string + ' 至 ' + end_time_string)
-    
-    person_cell = table.cell(3, 1).merge(table.cell(3,5))
-    p = person_cell.paragraphs[0]
-    p.alignment=WD_ALIGN_PARAGRAPH.JUSTIFY_LOW
-    
-    
-    report.add_paragraph(' ')
-    
-    for i in range(j * 2, j * 2 + 2):
-        #插入图形的长宽
-        report.add_picture(str(i) + '.jpg', width=Inches(1.5 * 4), height=Inches(1.5))
-    
-    report.save('报告'+str(j + 1) + '.docx')
-    ##generate_report(args.path, args.product, args.samplenumber, args.institution)
+    run.add_text(text)
+
+table.style = 'TableGrid' #single lines in all cells
+table.autofit = True
+
+
+set_cell_text(table.cell(0, 0), '产品名称')
+set_cell_text(table.cell(0, 1), args.product)  
+set_cell_text(table.cell(0, 2), '样品编号')
+set_cell_text(table.cell(0, 3), args.samplenumber)
+set_cell_text(table.cell(0, 4), '型号规格')
+set_cell_text(table.cell(0, 5), args.type)
+
+set_cell_text(table.cell(1, 0), '受检单位')
+set_cell_text(table.cell(1, 1), args.institution)
+set_cell_text(table.cell(1, 2), '设备名称')
+set_cell_text(table.cell(1, 3), '多通道免缠绕插回损测试仪（单模）MS08B')
+set_cell_text(table.cell(1, 4), '出厂编号')
+set_cell_text(table.cell(1, 5), '1538556')
+set_cell_text(table.cell(2, 0), '检验时间')
+set_cell_text(table.cell(3, 0), '检验人员')
+
+#合并一些表格单元
+time_cell = table.cell(2, 1).merge(table.cell(2,5))
+set_cell_text(time_cell, start_time_string + ' 至 ' + end_time_string)
+
+person_cell = table.cell(3, 1).merge(table.cell(3,5))
+p = person_cell.paragraphs[0]
+p.alignment=WD_ALIGN_PARAGRAPH.JUSTIFY_LOW
+
+
+report.add_paragraph(' ')
+
+for i in range(num_terminal):
+    #插入图形的长宽
+    report.add_picture(str(i) + '.jpg', width=Inches(1.5 * 4), height=Inches(1.5))
+
+report.save('报告.docx')
+##generate_report(args.path, args.product, args.samplenumber, args.institution)
